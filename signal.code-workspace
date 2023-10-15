@@ -1,0 +1,27 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"settings":
+	{
+		"files.exclude":
+		{
+			"node_modules": true,
+			"resources": true,
+		},
+		
+		"search.exclude":
+		{
+			"_dist": true,
+			"node_modules": true,
+			"resources": true,
+			"webpack": true,
+			"**/src/libs": true,
+			"package*.json": true,
+			".*.*": true
+		}
+	}
+}
