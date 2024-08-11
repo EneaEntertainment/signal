@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /** Helper to deduce the argument types of a function. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type ArgumentTypes<T> = T extends (...args: infer U)=> infer R ? U : never;
@@ -35,7 +36,9 @@ class SignalBindingImpl<T extends Function> implements SignalBinding
     detach(): boolean
     {
         if (this.owner === null)
+        {
             return false;
+        }
 
         this.owner.detach(this);
 
@@ -98,17 +101,23 @@ export class Signal<T extends Function = ()=> void>
     dispatch(...args: ArgumentTypes<T>)
     {
         if (!this.enabled)
+        {
             return;
+        }
 
         let node = this._head;
 
         if (!node)
+        {
             return;
+        }
 
         while (node)
         {
             if (node.once)
+            {
                 this.detach(node);
+            }
 
             const len = arguments.length;
 
@@ -167,27 +176,37 @@ export class Signal<T extends Function = ()=> void>
         const node = node_ as SignalBindingImpl<T>;
 
         if (node.owner !== this)
+        {
             return this;
+        }
 
         if (node.prev)
+        {
             node.prev.next = node.next;
+        }
 
         if (node.next)
+        {
             node.next.prev = node.prev;
+        }
 
         if (node === this._head)
         {
             this._head = node.next;
 
             if (node.next === null)
+            {
                 this._tail = null;
+            }
         }
         else if (node === this._tail)
         {
             this._tail = node.prev;
 
             if (this._tail)
+            {
                 this._tail.next = null;
+            }
         }
 
         node.owner = null;
@@ -203,7 +222,9 @@ export class Signal<T extends Function = ()=> void>
         let node = this._head;
 
         if (!node)
+        {
             return this;
+        }
 
         this._head = null;
         this._tail = null;
@@ -229,7 +250,9 @@ export class Signal<T extends Function = ()=> void>
         else
         {
             if (this._tail)
+            {
                 this._tail.next = node;
+            }
 
             node.prev = this._tail;
             this._tail = node;
@@ -251,7 +274,9 @@ export class AsyncSignal<T extends Function = ()=> void> extends Signal
     async dispatch(...args: ArgumentTypes<T>): Promise<void>
     {
         if (!this.enabled)
+        {
             return;
+        }
 
         await new Promise<void>((resolve: ()=> void) =>
         {
