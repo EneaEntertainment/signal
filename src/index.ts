@@ -12,6 +12,8 @@ export type AsyncWithVoidReturn<T extends Function> = (...args: [()=> void, ...A
  */
 export interface SignalBinding
 {
+    owner: Signal<any> | null;
+
     /** Detaches this binding from the owning signal. */
     detach(): boolean;
 }
