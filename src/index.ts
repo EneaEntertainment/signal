@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /** Helper to deduce the argument types of a function. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type ArgumentTypes<T> = T extends (...args: infer U)=> infer R ? U : never;
-export type WithVoidReturn<T extends Function> = (...args: [...ArgumentTypes<T>])=> void;
-export type AsyncWithVoidReturn<T extends Function> = (...args: [()=> void, ...ArgumentTypes<T>])=> void;
+export type ArgumentTypes<T> = T extends (...args: infer U) => infer R ? U : never;
+export type WithVoidReturn<T extends Function> = (...args: [...ArgumentTypes<T>]) => void;
+export type AsyncWithVoidReturn<T extends Function> = (...args: [() => void, ...ArgumentTypes<T>]) => void;
 
 /**
  * Interface representing a single binding to the signal.
@@ -20,13 +20,13 @@ export interface SignalBinding
 
 class SignalBindingImpl<T extends Function> implements SignalBinding
 {
-    readonly fn: WithVoidReturn<T>;
-    readonly once: boolean;
-    readonly thisArg: any;
+    public readonly fn: WithVoidReturn<T>;
+    public readonly once: boolean;
+    public readonly thisArg: any;
 
-    next: SignalBindingImpl<T> | null = null;
-    prev: SignalBindingImpl<T> | null = null;
-    owner: Signal<any> | null = null;
+    public next: SignalBindingImpl<T> | null = null;
+    public prev: SignalBindingImpl<T> | null = null;
+    public owner: Signal<any> | null = null;
 
     constructor(fn: WithVoidReturn<T>, once = false, thisArg: any)
     {
@@ -35,7 +35,7 @@ class SignalBindingImpl<T extends Function> implements SignalBinding
         this.thisArg = thisArg;
     }
 
-    detach(): boolean
+    public detach(): boolean
     {
         if (this.owner === null)
         {
@@ -48,20 +48,16 @@ class SignalBindingImpl<T extends Function> implements SignalBinding
     }
 }
 
-/**
- * A signal is a dispatcher that can bind functions (handlers) to dispatched events.
- */
-export class Signal<T extends Function = ()=> void>
+/** A signal is a dispatcher that can bind functions (handlers) to dispatched events. */
+export class Signal<T extends Function = () => void>
 {
     private _head: SignalBindingImpl<T> | null = null;
     private _tail: SignalBindingImpl<T> | null = null;
 
     public enabled = true;
 
-    /**
-     * Gathers a list of all the handlers currently bound to this signal.
-     */
-    handlers(): Array<SignalBinding>
+    /** Gathers a list of all the handlers currently bound to this signal. */
+    public handlers(): Array<SignalBinding>
     {
         let node = this._head;
 
@@ -76,20 +72,17 @@ export class Signal<T extends Function = ()=> void>
         return handlers;
     }
 
-    /**
-     * Returns true if this signal has any bound handlers.
-     */
-    hasAny(): boolean
+    /** Returns true if this signal has any bound handlers. */
+    public hasAny(): boolean
     {
         return !!this._head;
     }
 
     /**
      * Returns true if the given binding is owned by this signal.
-     *
-     * @param node The binding to check.
+     * @param node - The binding to check.
      */
-    has(node: SignalBinding): boolean
+    public has(node: SignalBinding): boolean
     {
         return (node as SignalBindingImpl<T>).owner === this;
     }
@@ -97,10 +90,9 @@ export class Signal<T extends Function = ()=> void>
     /**
      * Dispatch an event to all handlers.
      * If the enabled is set to `false`, the event will not be dispatched.
-     *
-     * @param args The arguments to pass
+     * @param args - The arguments to pass
      */
-    dispatch(...args: ArgumentTypes<T>)
+    public dispatch(...args: ArgumentTypes<T>)
     {
         if (!this.enabled)
         {
@@ -125,17 +117,17 @@ export class Signal<T extends Function = ()=> void>
 
             switch (len)
             {
-                // @ts-ignore
+                // @ts-expect-error typings
                 case 0: node.fn.call(node.thisArg); break;
-                // @ts-ignore
+                // @ts-expect-error typings
                 case 1: node.fn.call(node.thisArg, args[0]); break;
-                // @ts-ignore
+                // @ts-expect-error typings
                 case 2: node.fn.call(node.thisArg, args[0], args[1]); break;
-                // @ts-ignore
+                // @ts-expect-error typings
                 case 3: node.fn.call(node.thisArg, args[0], args[1], args[2]); break;
-                // @ts-ignore
+                // @ts-expect-error typings
                 case 4: node.fn.call(node.thisArg, args[0], args[1], args[2], args[3]); break;
-                // @ts-ignore
+                // @ts-expect-error typings
                 case 5: node.fn.call(node.thisArg, args[0], args[1], args[2], args[3], args[4]); break;
 
                 default:
@@ -148,32 +140,29 @@ export class Signal<T extends Function = ()=> void>
 
     /**
      * Binds a new handler function to this signal that will be called for each dispatch.
-     *
-     * @param fn The handler function to bind.
-     * @param thisArg Optional `this` argument to use when calling this handler
+     * @param fn - The handler function to bind.
+     * @param thisArg - Optional `this` argument to use when calling this handler
      */
-    add(fn: WithVoidReturn<T>, thisArg: any = null): SignalBinding
+    public add(fn: WithVoidReturn<T>, thisArg: any = null): SignalBinding
     {
         return this._addSignalBinding(new SignalBindingImpl(fn, false, thisArg));
     }
 
     /**
      * Binds a new handler function to this signal that will only be called once on the next dispatch.
-     *
-     * @param fn The handler function to bind.
-     * @param thisArg Optional `this` argument to use when calling this handler.
+     * @param fn - The handler function to bind.
+     * @param thisArg - Optional `this` argument to use when calling this handler.
      */
-    once(fn: WithVoidReturn<T>, thisArg: any = null): SignalBinding
+    public once(fn: WithVoidReturn<T>, thisArg: any = null): SignalBinding
     {
         return this._addSignalBinding(new SignalBindingImpl(fn, true, thisArg));
     }
 
     /**
      * Detaches a binding from this signal so that it is no longer called.
-     *
-     * @param node_ The binding to detach.
+     * @param node_ - The binding to detach.
      */
-    detach(node_: SignalBinding): this
+    public detach(node_: SignalBinding): this
     {
         const node = node_ as SignalBindingImpl<T>;
 
@@ -216,10 +205,8 @@ export class Signal<T extends Function = ()=> void>
         return this;
     }
 
-    /**
-     * Detaches all bindings.
-     */
-    detachAll()
+    /** Detaches all bindings. */
+    public detachAll()
     {
         let node = this._head;
 
@@ -266,23 +253,23 @@ export class Signal<T extends Function = ()=> void>
     }
 }
 
-export class AsyncSignal<T extends Function = ()=> void> extends Signal
+export class AsyncSignal<T extends Function = () => void> extends Signal
 {
-    add(fn: AsyncWithVoidReturn<T>, thisArg: any = null): SignalBinding
+    public add(fn: AsyncWithVoidReturn<T>, thisArg: any = null): SignalBinding
     {
         return this._addSignalBinding(new SignalBindingImpl(fn, false, thisArg));
     }
 
-    async dispatch(...args: ArgumentTypes<T>): Promise<void>
+    public async dispatch(...args: ArgumentTypes<T>): Promise<void>
     {
         if (!this.enabled)
         {
             return;
         }
 
-        await new Promise<void>((resolve: ()=> void) =>
+        await new Promise<void>((resolve: () => void) =>
         {
-            // @ts-ignore
+            // @ts-expect-error args
             super.dispatch(resolve, ...args);
         });
     }
